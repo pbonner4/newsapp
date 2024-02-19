@@ -222,82 +222,42 @@ public class JdbcArticleContentDao implements ArticleContentDao {
                     String sql = "INSERT INTO article_content (article_id, title, text, url, url_to_image, category, category_specified) VALUES (?,?,?,?,?,?,?) ON CONFLICT (article_id) DO NOTHING;";
                     jdbcTemplate.update(sql, article.getId(), article.getTitle(), contentString, articleUrl, article.getUrlToImage(), article.getCategory(), article.getCategorySpecified());
 
-                }else if (article.getName().equals("NBCSports.com")) {
+                } else if (article.getName().equals("NBCSports.com")) {
                         String articleUrl = article.getUrl();
                         Document doc = Jsoup.connect(articleUrl).get();
                         StringBuilder content = new StringBuilder();
-                        Elements pElements = doc.select(".entry-content p");
-                        Elements backupPElements = doc.select(".field p");
-                        Set<String> tweetUrls = new HashSet<>();
-                        for (Element pElement: pElements) {
+                    Elements paragraph = doc.select("div .ArticlePage-articleBody");
 
-                            if(!pElement.text().contains("https://www.facebook.com/"))
-                            content.append("<p>" + pElement.text() + "</p>" + System.lineSeparator() + System.lineSeparator());
-
-
-
-                            Elements aTags = doc.select("a[href*=twitter.com]");
-                            for (Element aTag : aTags) {
-                                String tweetUrl = aTag.attr("href").split("\\?")[0];
-                                String tweetRegex = "https://twitter.com/(?!(?:i\\/|.*timelines\\/))\\w+/status/\\d+";
-                                if (tweetUrl.matches(tweetRegex) && !tweetUrls.contains(tweetUrl)) {
-                                    // Construct the API URL with the tweet URL as a query parameter
-                                    String apiUrl = "https://publish.twitter.com/oembed?url=" + URLEncoder.encode(tweetUrl, "UTF-8");
-                                    URL url = new URL(apiUrl);
-                                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                                    conn.setRequestMethod("GET");
-                                    BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                                    String inputLine;
-                                    StringBuilder response = new StringBuilder();
-                                    while ((inputLine = in.readLine()) != null) {
-                                        response.append(inputLine);
-                                    }
-                                    in.close();
-                                    JSONObject jsonResponse = new JSONObject(response.toString());
-                                    String html = jsonResponse.getString("html");
-                                    String blockquoteHtml = html.replaceAll("(?s)<blockquote[^>]*>((?:(?!</?script)[\\s\\S])*?)</blockquote>", "<blockquote class=\"twitter-tweet\">$1</blockquote>");
-                                    String removingScriptTags = blockquoteHtml.replaceAll("<script async src=\"https://platform.twitter.com/widgets.js\" charset=\"utf-8\"></script>", "");
-                                    if (blockquoteHtml != null) {
-                                        content.append(removingScriptTags);
-                                        tweetUrls.add(tweetUrl); // Add the tweet URL to the set
-                                    }
-                                }
-                            }
+//            paragraph.select(".css-1lm38nn").remove();
+                    paragraph.select("#taboola-mid-article-recommendation-reel").remove();
+                    paragraph.select(".ArticlePage-branding").remove();
+                    Elements scripts = paragraph.select("script");
+                    for (Element script : scripts) {
+                        if (script.html().contains("taboola-mid-article-recommendation-reel")) {
+                            script.remove();
                         }
-                    for (Element pElement: backupPElements) {
-
-                        content.append("<p>" + pElement.text() + "</p>" + System.lineSeparator() + System.lineSeparator());
-
-                        Elements aTags = doc.select("a[href*=twitter.com]");
-                        for (Element aTag : aTags) {
-                            String tweetUrl = aTag.attr("href").split("\\?")[0];
-                            String tweetRegex = "https://twitter.com/(?!(?:i\\/|.*timelines\\/))\\w+/status/\\d+";
-                            if (tweetUrl.matches(tweetRegex) && !tweetUrls.contains(tweetUrl)) {
-                                // Construct the API URL with the tweet URL as a query parameter
-                                String apiUrl = "https://publish.twitter.com/oembed?url=" + URLEncoder.encode(tweetUrl, "UTF-8");
-                                URL url = new URL(apiUrl);
-                                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                                conn.setRequestMethod("GET");
-                                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                                String inputLine;
-                                StringBuilder response = new StringBuilder();
-                                while ((inputLine = in.readLine()) != null) {
-                                    response.append(inputLine);
-                                }
-                                in.close();
-                                JSONObject jsonResponse = new JSONObject(response.toString());
-                                String html = jsonResponse.getString("html");
-                                String blockquoteHtml = html.replaceAll("(?s)<blockquote[^>]*>((?:(?!</?script)[\\s\\S])*?)</blockquote>", "<blockquote class=\"twitter-tweet\">$1</blockquote>");
-                                String removingScriptTags = blockquoteHtml.replaceAll("<script async src=\"https://platform.twitter.com/widgets.js\" charset=\"utf-8\"></script>", "");
-                                if (blockquoteHtml != null) {
-                                    content.append(removingScriptTags);
-                                    tweetUrls.add(tweetUrl); // Add the tweet URL to the set
-                                }
+                        if (script.hasAttr("src") && script.attr("src").equals("https://platform.twitter.com/widgets.js")) {
+                            // Add the Vue directive to the script
+                            script.attr("is", "vue:script");
+                            // Replace the script element with a div element
+                            Element div = new Element(Tag.valueOf("div"), "");
+                            // Copy attributes from the script to the div
+                            for (Attribute attribute : script.attributes()) {
+                                div.attr(attribute.getKey(), attribute.getValue());
                             }
+                            // Copy the content of the script to the div
+                            div.text(script.data());
+                            // Replace the script with the new div
+                            script.replaceWith(div);
+
                         }
                     }
-                        String contentString = content.toString();
+                    paragraph.select("i").remove();
 
+
+
+                    content.append(removeComments(paragraph.html()));
+                        String contentString = content.toString();
 
                         String sql = "INSERT INTO article_content (article_id, title, text, url, url_to_image, category, category_specified) VALUES (?,?,?,?,?,?,?) ON CONFLICT (article_id) DO NOTHING;";
                         jdbcTemplate.update(sql, article.getId(), article.getTitle(), contentString, articleUrl, article.getUrlToImage(), article.getCategory(), article.getCategorySpecified());
