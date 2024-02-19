@@ -5,8 +5,10 @@ import newsApp.model.Article;
 import newsApp.model.ArticleContent;
 import newsApp.services.ArticleService;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.parser.Tag;
 import org.jsoup.select.Elements;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -49,13 +51,34 @@ public class JdbcArticleContentDao implements ArticleContentDao {
                 if (article.getName().equals("Investing.com")) {
                     String url = article.getUrl();
                     Document doc = Jsoup.connect(url).get();
-                    Elements paragraphs = doc.select("p");
+                    Elements paragraph = doc.select("div.WYSIWYG p:not(.MsoNormal), div.WYSIWYG h2, div.WYSIWYG ul");
                     StringBuilder content = new StringBuilder();
-                    for (Element paragraph : paragraphs) {
-                        if (!paragraph.text().contains("Please try another search") && !paragraph.text().contains("Position added successfully to:") && !paragraph.text().contains("Add a Comment") && !paragraph.text().contains("We encourage you to use comments to engage with other users, share your perspective and ask questions of authors and each other. However, in order to maintain the high level of discourse we’ve all come to value and expect, please keep the following criteria in mind:") && !paragraph.text().contains("the conversation, don’t trash it.") && !paragraph.text().contains("Only post material that’s relevant to the topic being discussed.") && !paragraph.text().contains("Even negative opinions can be framed positively and diplomatically.") && !paragraph.text().contains("Avoid profanity, slander or personal attacks") && !paragraph.text().contains("directed at an author or another user. Racism, sexism and other forms of discrimination will not be tolerated.") && !paragraph.text().contains("Perpetrators of spam or abuse will be deleted from the site and prohibited from future registration at Investing.com’s discretion.") && !paragraph.text().contains("Are you sure you want to block %USER_NAME%?") && !paragraph.text().contains("By doing so, you and %USER_NAME% will not be able to see\n" +
-                                "any of each other's Investing.com's posts.") && !paragraph.text().contains("%USER_NAME%") && !paragraph.text().contains("Since you’ve just unblocked this person, you must wait 48 hours before renewing the block.") && !paragraph.text().contains("I feel that this comment is:") && !paragraph.text().contains("Trade With A Regulated Broker")) {
 
-                            content.append("<p>" + paragraph.text() + "</p>" + System.lineSeparator() + System.lineSeparator());
+                    // Iterate over each element
+                    for (Element tag : paragraph) {
+                        // Retain each paragraph as HTML
+                        String paragraphHtml = tag.outerHtml();
+                        // Print or process each paragraph HTML as needed
+                        if(!paragraphHtml.contains("Position added successfully to: ") && !paragraphHtml.contains("We encourage you to use comments to engage with other users,") && !paragraphHtml.contains("Only post material that’s relevant to the topic being discussed.") && !paragraphHtml.contains("the conversation, don’t trash it.") && !paragraphHtml.contains("directed at an author or another user. Racism, sexism and other forms of discrimination will not be tolerated.") && !paragraph.contains("Investing.com’s") &&
+                                !paragraphHtml.contains(" <li><p class=\"MsoNormal\" style=\"margin: 0cm; text-indent: -18.0pt; line-height: normal; mso-list: l0 level1 lfo1; tab-stops: list 36.0pt;\"><!--[if !supportLists]--><span style=\"font-size: 10.0pt; font-family: Symbol; mso-fareast-font-family: Symbol; mso-bidi-font-family: Symbol; color: #333333; mso-ansi-language: EN-US; mso-fareast-language: UK;\" lang=\"EN-US\"><span style=\"font-variant-numeric: normal; font-variant-east-asian: normal; font-stretch: normal; font-size: 7pt; line-height: normal; font-family: 'Times New Roman';\">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</span></span><strong><span style=\"font-size: 10.0pt; font-family: 'Arial',sans-serif; mso-fareast-font-family: 'Times New Roman'; color: #333333; border: none windowtext 1.0pt; mso-border-alt: none windowtext 0cm; padding: 0cm; mso-ansi-language: EN-US; mso-fareast-language: UK;\" lang=\"EN-US\">Enrich</span></strong><span style=\"font-size: 10.0pt; font-family: 'Arial',sans-serif; mso-fareast-font-family: 'Times New Roman'; color: #333333; border: none windowtext 1.0pt; mso-border-alt: none windowtext 0cm; padding: 0cm; mso-ansi-language: EN-US; mso-fareast-language: UK;\" lang=\"EN-US\">&nbsp;</span><span style=\"font-size: 10.0pt; font-family: 'Arial',sans-serif; mso-fareast-font-family: 'Times New Roman'; color: #333333; mso-ansi-language: EN-US; mso-fareast-language: UK;\" lang=\"EN-US\">the conversation, don’t trash it.</span></p></li>\n" +
+                                        " <li><p class=\"MsoNormal\" style=\"margin: 0cm; text-indent: -18.0pt; line-height: normal; mso-list: l0 level1 lfo1; tab-stops: list 36.0pt;\"><!--[if !supportLists]--><span style=\"font-size: 10.0pt; font-family: Symbol; mso-fareast-font-family: Symbol; mso-bidi-font-family: Symbol; color: #333333; mso-ansi-language: EN-US; mso-fareast-language: UK;\" lang=\"EN-US\"><span style=\"font-variant-numeric: normal; font-variant-east-asian: normal; font-stretch: normal; font-size: 7pt; line-height: normal; font-family: 'Times New Roman';\">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</span></span><!--[endif]--><strong><span style=\"font-size: 10.0pt; font-family: 'Arial',sans-serif; mso-fareast-font-family: 'Times New Roman'; color: #333333; border: none windowtext 1.0pt; mso-border-alt: none windowtext 0cm; padding: 0cm; mso-ansi-language: EN-US; mso-fareast-language: UK;\" lang=\"EN-US\">Stay focused and on track.</span></strong><span style=\"font-size: 10.0pt; font-family: 'Arial',sans-serif; mso-fareast-font-family: 'Times New Roman'; color: #333333; mso-ansi-language: EN-US; mso-fareast-language: UK;\" lang=\"EN-US\">&nbsp;Only post material that’s relevant to the topic being discussed.&nbsp;</span></p></li>\n" +
+                                        " <li><p class=\"MsoNormal\" style=\"margin: 0cm; text-indent: -18.0pt; line-height: normal; mso-list: l0 level1 lfo1; tab-stops: list 36.0pt;\"><!--[if !supportLists]--><span style=\"font-size: 10.0pt; font-family: Symbol; mso-fareast-font-family: Symbol; mso-bidi-font-family: Symbol; color: #333333; mso-ansi-language: EN-US; mso-fareast-language: UK;\" lang=\"EN-US\"><span style=\"font-variant-numeric: normal; font-variant-east-asian: normal; font-stretch: normal; font-size: 7pt; line-height: normal; font-family: 'Times New Roman';\">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</span></span><!--[endif]--><strong><span style=\"font-size: 10.0pt; font-family: 'Arial',sans-serif; mso-fareast-font-family: 'Times New Roman'; color: #333333; border: none windowtext 1.0pt; mso-border-alt: none windowtext 0cm; padding: 0cm; mso-ansi-language: EN-US; mso-fareast-language: UK;\" lang=\"EN-US\">Be respectful.</span></strong><span style=\"font-size: 10.0pt; font-family: 'Arial',sans-serif; mso-fareast-font-family: 'Times New Roman'; color: #333333; mso-ansi-language: EN-US; mso-fareast-language: UK;\" lang=\"EN-US\">&nbsp;Even negative opinions can be framed positively and diplomatically. <span style=\"border: none windowtext 1.0pt; mso-border-alt: none windowtext 0cm; padding: 0cm; mso-bidi-font-weight: bold;\">Avoid profanity, slander or personal attacks</span>&nbsp;directed at an author or another user. Racism, sexism and other forms of discrimination will not be tolerated.</span></p></li>\n" +
+                                        " <li><strong><span style=\"font-size: 10.0pt; line-height: 107%; font-family: 'Arial',sans-serif; mso-fareast-font-family: 'Times New Roman'; color: #333333; border: none windowtext 1.0pt; mso-border-alt: none windowtext 0cm; padding: 0cm; mso-ansi-language: EN-US; mso-fareast-language: UK; mso-bidi-language: AR-SA;\" lang=\"EN-US\">Use standard writing style.</span></strong><span style=\"font-size: 10.0pt; line-height: 107%; font-family: 'Arial',sans-serif; mso-fareast-font-family: 'Times New Roman'; color: #333333; mso-ansi-language: EN-US; mso-fareast-language: UK; mso-bidi-language: AR-SA;\" lang=\"EN-US\">&nbsp;Include punctuation and upper and lower cases. Comments that are written in all caps and contain excessive use of symbols will be removed.</span></li>\n" +
+                                        " <li><strong><span style=\"font-size: 10.0pt; line-height: 107%; font-family: 'Arial',sans-serif; mso-fareast-font-family: 'Times New Roman'; color: #333333; border: none windowtext 1.0pt; mso-border-alt: none windowtext 0cm; padding: 0cm; mso-ansi-language: EN-US; mso-fareast-language: UK; mso-bidi-language: AR-SA;\" lang=\"EN-US\">NOTE</span></strong><span style=\"font-size: 10.0pt; line-height: 107%; font-family: 'Arial',sans-serif; mso-fareast-font-family: 'Times New Roman'; color: #333333; mso-ansi-language: EN-US; mso-fareast-language: UK; mso-bidi-language: AR-SA;\" lang=\"EN-US\">: Spam and/or promotional messages and comments containing links will be removed. </span><span style=\"font-size: 10pt; line-height: 107%; font-family: Arial, sans-serif; color: #333333; background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial;\" lang=\"EN-US\">Phone numbers, email addresses, links to personal or business websites, Skype/Telegram/WhatsApp etc. addresses (including links to groups) will also be removed; self-promotional material or business-related solicitations or PR (ie, contact me for signals/advice etc.), and/or any other comment that contains personal contact specifcs or advertising will be removed as well. In addition, any of the above-mentioned violations may result in suspension of your account.</span></li>\n" +
+                                        " <li><strong><span style=\"font-size: 10.0pt; line-height: 107%; font-family: 'Arial',sans-serif; mso-fareast-font-family: 'Times New Roman'; color: #333333; border: none windowtext 1.0pt; mso-border-alt: none windowtext 0cm; padding: 0cm; mso-ansi-language: EN-US; mso-fareast-language: UK; mso-bidi-language: AR-SA;\" lang=\"EN-US\">Doxxing. </span></strong><span style=\"font-size: 10.0pt; line-height: 107%; font-family: 'Arial',sans-serif; mso-fareast-font-family: 'Times New Roman'; color: #333333; border: none windowtext 1.0pt; mso-border-alt: none windowtext 0cm; padding: 0cm; mso-ansi-language: EN-US; mso-fareast-language: UK; mso-bidi-language: AR-SA; mso-bidi-font-weight: bold;\" lang=\"EN-US\">We do not allow any sharing of private or personal contact or other information about any individual or organization. This will result in immediate suspension of the commentor and his or her account.</span></li>\n" +
+                                        " <li><strong><span style=\"font-size: 10.0pt; line-height: 107%; font-family: 'Arial',sans-serif; mso-fareast-font-family: 'Times New Roman'; color: #333333; border: none windowtext 1.0pt; mso-border-alt: none windowtext 0cm; padding: 0cm; mso-ansi-language: EN-US; mso-fareast-language: UK; mso-bidi-language: AR-SA;\" lang=\"EN-US\">Don’t monopolize the conversation.</span></strong><span style=\"font-size: 10.0pt; line-height: 107%; font-family: 'Arial',sans-serif; mso-fareast-font-family: 'Times New Roman'; color: #333333; mso-ansi-language: EN-US; mso-fareast-language: UK; mso-bidi-language: AR-SA;\" lang=\"EN-US\">&nbsp;We appreciate passion and conviction, but we also strongly believe in giving everyone a chance to air their point of view. Therefore, in addition to civil interaction, we expect commenters to offer their opinions succinctly and thoughtfully, but not so repeatedly that others are annoyed or offended. If we receive complaints about individuals who take over a thread or forum, we reserve the right to ban them from the site, without recourse.</span></li>\n" +
+                                        " <li><strong><span style=\"font-size: 10.0pt; line-height: 107%; font-family: 'Arial',sans-serif; mso-fareast-font-family: 'Times New Roman'; color: #333333; border: none windowtext 1.0pt; mso-border-alt: none windowtext 0cm; padding: 0cm; mso-ansi-language: EN-US; mso-fareast-language: UK; mso-bidi-language: AR-SA;\" lang=\"EN-US\">Only English</span></strong><span style=\"font-size: 10.0pt; line-height: 107%; font-family: 'Arial',sans-serif; mso-fareast-font-family: 'Times New Roman'; color: #333333; mso-ansi-language: EN-US; mso-fareast-language: UK; mso-bidi-language: AR-SA;\" lang=\"EN-US\">&nbsp;comments will be allowed.</span></li>\n" +
+                                        " <li><span style=\"font-size: 10.0pt; line-height: 107%; font-family: 'Arial',sans-serif; mso-fareast-font-family: 'Times New Roman'; color: #333333; mso-ansi-language: EN-US; mso-fareast-language: UK; mso-bidi-language: AR-SA;\" lang=\"EN-US\">Any comment you publish, together with your investing.com profile, <strong>will be public</strong> on investing.com and <strong>may be indexed</strong> and available through third party search engines, such as Google.</span></li>\n" +
+                                        "</ul>\n" +
+                                        "<p class=\"MsoNormal\" style=\"margin: 0cm; text-indent: -18.0pt; line-height: normal; mso-list: l0 level1 lfo1; tab-stops: list 36.0pt;\"><!--[if !supportLists]--><span style=\"font-size: 10.0pt; font-family: Symbol; mso-fareast-font-family: Symbol; mso-bidi-font-family: Symbol; color: #333333; mso-ansi-language: EN-US; mso-fareast-language: UK;\" lang=\"EN-US\"><span style=\"font-variant-numeric: normal; font-variant-east-asian: normal; font-stretch: normal; font-size: 7pt; line-height: normal; font-family: 'Times New Roman';\">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</span></span><strong><span style=\"font-size: 10.0pt; font-family: 'Arial',sans-serif; mso-fareast-font-family: 'Times New Roman'; color: #333333; border: none windowtext 1.0pt; mso-border-alt: none windowtext 0cm; padding: 0cm; mso-ansi-language: EN-US; mso-fareast-language: UK;\" lang=\"EN-US\">Enrich</span></strong><span style=\"font-size: 10.0pt; font-family: 'Arial',sans-serif; mso-fareast-font-family: 'Times New Roman'; color: #333333; border: none windowtext 1.0pt; mso-border-alt: none windowtext 0cm; padding: 0cm; mso-ansi-language: EN-US; mso-fareast-language: UK;\" lang=\"EN-US\">&nbsp;</span><span style=\"font-size: 10.0pt; font-family: 'Arial',sans-serif; mso-fareast-font-family: 'Times New Roman'; color: #333333; mso-ansi-language: EN-US; mso-fareast-language: UK;\" lang=\"EN-US\">the conversation, don’t trash it.</span></p>\n" +
+                                        "<p class=\"MsoNormal\" style=\"margin: 0cm; text-indent: -18.0pt; line-height: normal; mso-list: l0 level1 lfo1; tab-stops: list 36.0pt;\"><!--[if !supportLists]--><span style=\"font-size: 10.0pt; font-family: Symbol; mso-fareast-font-family: Symbol; mso-bidi-font-family: Symbol; color: #333333; mso-ansi-language: EN-US; mso-fareast-language: UK;\" lang=\"EN-US\"><span style=\"font-variant-numeric: normal; font-variant-east-asian: normal; font-stretch: normal; font-size: 7pt; line-height: normal; font-family: 'Times New Roman';\">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</span></span><!--[endif]--><strong><span style=\"font-size: 10.0pt; font-family: 'Arial',sans-serif; mso-fareast-font-family: 'Times New Roman'; color: #333333; border: none windowtext 1.0pt; mso-border-alt: none windowtext 0cm; padding: 0cm; mso-ansi-language: EN-US; mso-fareast-language: UK;\" lang=\"EN-US\">Stay focused and on track.</span></strong><span style=\"font-size: 10.0pt; font-family: 'Arial',sans-serif; mso-fareast-font-family: 'Times New Roman'; color: #333333; mso-ansi-language: EN-US; mso-fareast-language: UK;\" lang=\"EN-US\">&nbsp;Only post material that’s relevant to the topic being discussed.&nbsp;</span></p>\n" +
+                                        "<p class=\"MsoNormal\" style=\"margin: 0cm; text-indent: -18.0pt; line-height: normal; mso-list: l0 level1 lfo1; tab-stops: list 36.0pt;\"><!--[if !supportLists]--><span style=\"font-size: 10.0pt; font-family: Symbol; mso-fareast-font-family: Symbol; mso-bidi-font-family: Symbol; color: #333333; mso-ansi-language: EN-US; mso-fareast-language: UK;\" lang=\"EN-US\"><span style=\"font-variant-numeric: normal; font-variant-east-asian: normal; font-stretch: normal; font-size: 7pt; line-height: normal; font-family: 'Times New Roman';\">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</span></span><!--[endif]--><strong><span style=\"font-size: 10.0pt; font-family: 'Arial',sans-serif; mso-fareast-font-family: 'Times New Roman'; color: #333333; border: none windowtext 1.0pt; mso-border-alt: none windowtext 0cm; padding: 0cm; mso-ansi-language: EN-US; mso-fareast-language: UK;\" lang=\"EN-US\">Be respectful.</span></strong><span style=\"font-size: 10.0pt; font-family: 'Arial',sans-serif; mso-fareast-font-family: 'Times New Roman'; color: #333333; mso-ansi-language: EN-US; mso-fareast-language: UK;\" lang=\"EN-US\">&nbsp;Even negative opinions can be framed positively and diplomatically. <span style=\"border: none windowtext 1.0pt; mso-border-alt: none windowtext 0cm; padding: 0cm; mso-bidi-font-weight: bold;\">Avoid profanity, slander or personal attacks</span>&nbsp;directed at an author or another user. Racism, sexism and other forms of discrimination will not be tolerated.</span></p>" +
+                                        "<p><span style=\"color: #333333; font-family: Arial, sans-serif; font-size: 10pt;\">We encourage you to use comments to engage with other users, share your perspective and ask questions of authors and each other. However, in order to maintain the high level of discourse we’ve all come to value and expect, please keep the following criteria in mind:&nbsp;</span>&nbsp;</p>\n" +
+                                        "<p class=\"MsoNormal\" style=\"margin: 0cm; text-indent: -18.0pt; line-height: normal; mso-list: l0 level1 lfo1; tab-stops: list 36.0pt;\"><!--[if !supportLists]--><span style=\"font-size: 10.0pt; font-family: Symbol; mso-fareast-font-family: Symbol; mso-bidi-font-family: Symbol; color: #333333; mso-ansi-language: EN-US; mso-fareast-language: UK;\" lang=\"EN-US\"><span style=\"font-variant-numeric: normal; font-variant-east-asian: normal; font-stretch: normal; font-size: 7pt; line-height: normal; font-family: 'Times New Roman';\">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</span></span><!--[endif]--><strong><span style=\"font-size: 10.0pt; font-family: 'Arial',sans-serif; mso-fareast-font-family: 'Times New Roman'; color: #333333; border: none windowtext 1.0pt; mso-border-alt: none windowtext 0cm; padding: 0cm; mso-ansi-language: EN-US; mso-fareast-language: UK;\" lang=\"EN-US\">Stay focused and on track.</span></strong><span style=\"font-size: 10.0pt; font-family: 'Arial',sans-serif; mso-fareast-font-family: 'Times New Roman'; color: #333333; mso-ansi-language: EN-US; mso-fareast-language: UK;\" lang=\"EN-US\">&nbsp;Only post material that’s relevant to the topic being discussed.&nbsp;</span></p>\n" +
+                                        "<p class=\"MsoNormal\"><span style=\"font-size: 10.0pt; line-height: 107%; font-family: 'Arial',sans-serif; color: #333333; background: white; mso-ansi-language: EN-US;\" lang=\"EN-US\">Perpetrators of spam or abuse will be deleted from the site and prohibited from future registration at Investing.com’s discretion.</span></p>")
+                        ) {
+                            content.append(paragraphHtml);
+                            content.append(System.lineSeparator());
                         }
                     }
 
@@ -75,13 +98,26 @@ public class JdbcArticleContentDao implements ArticleContentDao {
                 } else if (article.getName().equals("MarketWatch")) {
                     String url = article.getUrl();
                     Document doc = Jsoup.connect(url).get();
-                    Elements paragraphs = doc.select("p");
+                    Elements paragraph = doc.select("div.article__body > div:not(.barrons-article-ad-wrapper, .barrons-main-article-ad-target, .barrons-article-ad-wrap, .media-object-article-reader)");
+
+                    // Remove elements with class .audioplayer
+                    paragraph.select(".audioplayer").remove();
+                    paragraph.select("strong").remove();
+                    paragraph.select("a").remove();
+                    paragraph.select(".media-object-article-reader").remove();
+                    paragraph.select("#chart_be3d84a89351d063731809fb").remove();
+                    paragraph.select("div[data-layout]").remove();
+                    paragraph.select("#cx-membership-tile").remove();
+
+
                     StringBuilder content = new StringBuilder();
-                    for (Element paragraph : paragraphs) {
-                        if (!paragraph.text().contains("Tim Rostan, our managing editor") && !paragraph.text().contains("An expanded version of this story appears on WSJ.com.") && !paragraph.text().contains("Visit a quote page and your recently viewed tickers will be displayed here.")) {
-                            content.append("<p>" + paragraph.text() + "</p>" + System.lineSeparator() + System.lineSeparator());
-                        }
-                    }
+
+
+                    Elements scripts = paragraph.select("script");
+
+
+                    content.append(removeComments(paragraph.html()));
+
                     String contentString = content.toString();
 
                     String sql = "INSERT INTO article_content (article_id, title, text, url, url_to_image, category, category_specified) VALUES (?,?,?,?,?,?,?) ON CONFLICT (article_id) DO NOTHING;";
@@ -89,14 +125,19 @@ public class JdbcArticleContentDao implements ArticleContentDao {
                 } else if (article.getName().equals("The Economist")) {
                     String url = article.getUrl();
                     Document doc = Jsoup.connect(url).get();
-                    Elements paragraphs = doc.select("p");
+                    Elements paragraph = doc.select("div .ekpjo0f2");
+
+//            paragraph.select(".css-1lm38nn").remove();
+                    paragraph.select("style[data-emotion]").remove();
+                    paragraph.select("i").remove();
+
                     StringBuilder content = new StringBuilder();
-                    content.append("You need to Subscribe to The Economist in order to view the full content. If you have a subscription feel free to click the link above to read the article, and make sure to come right back and drop a comment down below!" + System.lineSeparator() + System.lineSeparator());
-                    for (Element paragraph : paragraphs) {
-                        if (!paragraph.text().contains("IMAGES")) {
-                            content.append("<p>" + paragraph.text() + "</p>" + System.lineSeparator() + System.lineSeparator());
-                        }
-                    }
+
+
+                    Elements scripts = paragraph.select("script");
+
+
+                    content.append(removeComments(paragraph.html()));
                     String contentString = content.toString();
 
                     String sql = "INSERT INTO article_content (article_id, title, text, url, url_to_image, category, category_specified) VALUES (?,?,?,?,?,?,?) ON CONFLICT (article_id) DO NOTHING;";
@@ -115,33 +156,72 @@ public class JdbcArticleContentDao implements ArticleContentDao {
 
         for (Article article : articles) {
             try {
-                if (article.getName().equals("CBS Sports") && !article.getTitle().contains("How to Watch") && !article.getTitle().contains("How to watch")) {
-                    String url = article.getUrl();
-                    Document doc = Jsoup.connect(url).get();
-                    Elements paragraphs = doc.select(".Article-bodyContent p");
-                    Elements h2Elements = doc.select("h2");
-                    Elements ulAfterPElements = doc.select("ul");
+                if (article.getName().equals("CBS Sports")) {
+                    String articleUrl = article.getUrl();
+                    Document doc = Jsoup.connect(articleUrl).get();
+                    Element paragraph = doc.selectFirst(".Article-bodyContent");
                     StringBuilder content = new StringBuilder();
-                    for (Element paragraph : paragraphs) {
-                        if (!paragraph.text().contains("Play Now") && !paragraph.text().contains("Football Pick'em") && !paragraph.text().contains("Play Now") && !paragraph.text().contains("College Football Pick'em") && !paragraph.text().contains("Your Daily NFL Fix") && !paragraph.text().contains("Daily Soccer Podcast") && !paragraph.text().contains("© 2004-2023 CBS Interactive. All Rights Reserved.") && !paragraph.text().contains("CBS Sports is a registered trademark of CBS Broadcasting Inc. Commissioner.com is a registered trademark of CBS Interactive Inc.")) {
-                            content.append("<p>" + paragraph.text() + "</p>" + System.lineSeparator() + System.lineSeparator());
-                            for (Element ulAfterPElement : ulAfterPElements){
-                                Element previousElement = ulAfterPElement.previousElementSibling();
-                                if(previousElement == paragraph){
-                                    content.append(ulAfterPElement.html());
-                                }
-                            }
-                        }
-                        for (Element h3 : h2Elements) {
-                            if (h3.previousElementSibling() == paragraph) {
-                                content.append("<h3>" + h3.text()  + "</h3>" + System.lineSeparator() + System.lineSeparator());
-                            }
-                        }
-                        String contentString = content.toString();
+                    // Check if paragraph contains class "NewsFeed-title"
+                    if (!paragraph.hasClass("NewsFeed-title")) {
+                        // Get all <p> elements within the article body content
+                        Elements paragraphs = paragraph.select("p");
 
-                        String sql = "INSERT INTO article_content (article_id, title, text, url, url_to_image, category, category_specified) VALUES (?,?,?,?,?,?,?) ON CONFLICT (article_id) DO NOTHING;";
-                        jdbcTemplate.update(sql, article.getId(), article.getTitle(), contentString, url, article.getUrlToImage(), article.getCategory(), article.getCategorySpecified());
+                        // Iterate over each <p> element
+                        for (Element p : paragraphs) {
+                            // Check if paragraph contains any unwanted text
+                            if (p.text().contains("Play Now") && p.text().contains("Football Pick'em") && p.text().contains("Play Now") && p.text().contains("College Football Pick'em") && p.text().contains("Your Daily NFL Fix") && p.text().contains("Daily Soccer Podcast") && p.text().contains("© 2004-2023 CBS Interactive. All Rights Reserved.") && p.text().contains("CBS Sports is a registered trademark of CBS Broadcasting Inc. Commissioner.com is a registered trademark of CBS Interactive Inc.")
+                                    && p.text().contains("Our Latest NFL Stories") && p.text().contains("Thanks for signing up") && p.text().contains("Sorry") && p.text().contains("Crafted By The Best NFL Experts") && p.text().contains("View Profile") && p.text().contains("click here")) {
+                                // Remove the paragraph from the parent element
+                                p.remove();
+                            }
+                        }
+
+                        // Select all <img> elements within the article body content
+                        Elements images = paragraph.select("img[data-lazy]");
+
+                        // Iterate over each image element
+                        for (Element img : images) {
+                            // Get the value of the data-lazy attribute
+                            String lazySrc = img.attr("data-lazy");
+
+                            // Set the value of the srcset attribute to the value of data-lazy
+                            img.attr("srcset", lazySrc);
+
+                            // Remove the data-lazy attribute
+                            img.removeAttr("data-lazy");
+                        }
+
+                        Elements scripts = paragraph.select("script");
+
+                        // Iterate over each div element
+                        for (Element script : scripts) {
+                            if (script.hasAttr("src") && script.attr("src").equals("https://platform.twitter.com/widgets.js")) {
+                                // Add the Vue directive to the script
+                                script.attr("is", "vue:script");
+                                // Replace the script element with a div element
+                                Element div = new Element(Tag.valueOf("div"), "");
+                                // Copy attributes from the script to the div
+                                for (Attribute attribute : script.attributes()) {
+                                    div.attr(attribute.getKey(), attribute.getValue());
+                                }
+                                // Copy the content of the script to the div
+                                div.text(script.data());
+                                // Replace the script with the new div
+                                script.replaceWith(div);
+
+                            }
+                        }
+
                     }
+
+                    // Now you can access the modified HTML content
+                    String modifiedHtml = paragraph.html();
+                    content.append(modifiedHtml);
+
+                    String contentString = content.toString();
+                    String sql = "INSERT INTO article_content (article_id, title, text, url, url_to_image, category, category_specified) VALUES (?,?,?,?,?,?,?) ON CONFLICT (article_id) DO NOTHING;";
+                    jdbcTemplate.update(sql, article.getId(), article.getTitle(), contentString, articleUrl, article.getUrlToImage(), article.getCategory(), article.getCategorySpecified());
+
                 }else if (article.getName().equals("NBCSports.com")) {
                         String articleUrl = article.getUrl();
                         Document doc = Jsoup.connect(articleUrl).get();
@@ -293,73 +373,69 @@ public class JdbcArticleContentDao implements ArticleContentDao {
                 if (article.getName().equals("CBS Sports")) {
                     String articleUrl = article.getUrl();
                     Document doc = Jsoup.connect(articleUrl).get();
-                    Elements paragraphs = doc.select(".Article-bodyContent p");
-                    Elements h3Elements = doc.select("h3");
-                    Elements h2Elements = doc.select("h2");
-                    Elements ulAfterPElements = doc.select("ul");
-                    Elements youtubeVids = doc.select("div.MediaShortcodeYoutube-Video");
+                    Element paragraph = doc.selectFirst(".Article-bodyContent");
                     StringBuilder content = new StringBuilder();
-                    for (Element paragraph : paragraphs) {
-                        if (!paragraph.text().contains("Play Now") && !paragraph.text().contains("Football Pick'em") && !paragraph.text().contains("Play Now") && !paragraph.text().contains("College Football Pick'em") && !paragraph.text().contains("Your Daily NFL Fix") && !paragraph.text().contains("Daily Soccer Podcast") && !paragraph.text().contains("© 2004-2023 CBS Interactive. All Rights Reserved.") && !paragraph.text().contains("CBS Sports is a registered trademark of CBS Broadcasting Inc. Commissioner.com is a registered trademark of CBS Interactive Inc.")) {
-                            content.append("<p>" + paragraph.text() + "</p>" + System.lineSeparator() + System.lineSeparator());
-                            for (Element ulAfterPElement : ulAfterPElements){
-                                Element previousElement = ulAfterPElement.previousElementSibling();
-                                if(previousElement == paragraph){
-                                    content.append(ulAfterPElement.html());
+                    // Check if paragraph contains class "NewsFeed-title"
+                    if (!paragraph.hasClass("NewsFeed-title")) {
+                        // Get all <p> elements within the article body content
+                        Elements paragraphs = paragraph.select("p");
+
+                        // Iterate over each <p> element
+                        for (Element p : paragraphs) {
+                            // Check if paragraph contains any unwanted text
+                            if (p.text().contains("Play Now") && p.text().contains("Football Pick'em") && p.text().contains("Play Now") && p.text().contains("College Football Pick'em") && p.text().contains("Your Daily NFL Fix") && p.text().contains("Daily Soccer Podcast") && p.text().contains("© 2004-2023 CBS Interactive. All Rights Reserved.") && p.text().contains("CBS Sports is a registered trademark of CBS Broadcasting Inc. Commissioner.com is a registered trademark of CBS Interactive Inc.")
+                                    && p.text().contains("Our Latest NFL Stories") && p.text().contains("Thanks for signing up") && p.text().contains("Sorry") && p.text().contains("Crafted By The Best NFL Experts") && p.text().contains("View Profile") && p.text().contains("click here")) {
+                                // Remove the paragraph from the parent element
+                                p.remove();
+                            }
+                        }
+
+                        // Select all <img> elements within the article body content
+                        Elements images = paragraph.select("img[data-lazy]");
+
+                        // Iterate over each image element
+                        for (Element img : images) {
+                            // Get the value of the data-lazy attribute
+                            String lazySrc = img.attr("data-lazy");
+
+                            // Set the value of the srcset attribute to the value of data-lazy
+                            img.attr("srcset", lazySrc);
+
+                            // Remove the data-lazy attribute
+                            img.removeAttr("data-lazy");
+                        }
+
+                        Elements scripts = paragraph.select("script");
+
+                        // Iterate over each div element
+                        for (Element script : scripts) {
+                            if (script.hasAttr("src") && script.attr("src").equals("https://platform.twitter.com/widgets.js")) {
+                                // Add the Vue directive to the script
+                                script.attr("is", "vue:script");
+                                // Replace the script element with a div element
+                                Element div = new Element(Tag.valueOf("div"), "");
+                                // Copy attributes from the script to the div
+                                for (Attribute attribute : script.attributes()) {
+                                    div.attr(attribute.getKey(), attribute.getValue());
                                 }
-                            }
-                        }
-                        for (Element h3 : h2Elements) {
-                            if (h3.previousElementSibling() == paragraph) {
-                                content.append("<strong>" + h3.text() + ":" + "</strong>" + System.lineSeparator() + System.lineSeparator());
-                            }
-                        }
-                        for (Element youtubeVid : youtubeVids) {
+                                // Copy the content of the script to the div
+                                div.text(script.data());
+                                // Replace the script with the new div
+                                script.replaceWith(div);
 
-                            content.append(youtubeVid.html());
+                            }
                         }
-//                        Elements aTags = paragraph.select("a[href*=twitter.com]");
-//                        for (Element aTag : aTags) {
-//                            String tweetUrl = aTag.attr("href").split("\\?")[0];
-//                            String tweetRegex = "https://twitter.com/[a-zA-Z0-9_]+/status/\\d+";
-//                                if (tweetUrl.matches(tweetRegex)) {
-//                                String apiUrl = "https://publish.twitter.com/oembed?url=" + URLEncoder.encode(tweetUrl, "UTF-8");
-//
-//
-//                                URL url = new URL(apiUrl);
-//                                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//                                conn.setRequestMethod("GET");
-//
-//
-//                                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-//                                String inputLine;
-//                                StringBuilder response = new StringBuilder();
-//                                while ((inputLine = in.readLine()) != null) {
-//                                    response.append(inputLine);
-//                                }
-//                                in.close();
-//
-//
-//                                JSONObject jsonResponse = new JSONObject(response.toString());
-//                                String html = jsonResponse.getString("html");
-//
-//                                String blockquoteHtml = html.replaceAll("(?s)<blockquote[^>]*>((?:(?!</?script)[\\s\\S])*?)</blockquote>", "<blockquote class=\"twitter-tweet\">$1</blockquote>");
-//
-//
-//                                String removingScriptTags = blockquoteHtml.replaceAll("<script async src=\"https://platform.twitter.com/widgets.js\" charset=\"utf-8\"></script>", "");
-//
-//
-//                                if (blockquoteHtml != null) {
-//                                    content.append(removingScriptTags);
-//                                }
-//
-//                            }
-//                        }
+
                     }
-                    String contentString = content.toString();
 
+                    // Now you can access the modified HTML content
+                    String modifiedHtml = paragraph.html();
+                    content.append(modifiedHtml);
+
+                    String contentString = content.toString();
                     String sql = "INSERT INTO article_content (article_id, title, text, url, url_to_image, category, category_specified) VALUES (?,?,?,?,?,?,?) ON CONFLICT (article_id) DO NOTHING;";
                     jdbcTemplate.update(sql, article.getId(), article.getTitle(), contentString, articleUrl, article.getUrlToImage(), article.getCategory(), article.getCategorySpecified());
+
                 } else if (article.getName().equals("NFL News")) {
                     String url = article.getUrl();
                     Document doc = Jsoup.connect(url).get();
@@ -390,51 +466,69 @@ public class JdbcArticleContentDao implements ArticleContentDao {
                 if (article.getName().equals("CBS Sports")) {
                     String articleUrl = article.getUrl();
                     Document doc = Jsoup.connect(articleUrl).get();
-                    Set<String> tweetUrls = new HashSet<>();
-                    Elements paragraphs = doc.select("p");
-                    Elements h3Elements = doc.select("h3");
+                    Element paragraph = doc.selectFirst(".Article-bodyContent");
                     StringBuilder content = new StringBuilder();
-                    for (Element paragraph : paragraphs) {
-                        if (!paragraph.text().contains("Nfl Draft Podcast") && !paragraph.text().contains("Getty") && !paragraph.text().contains("Play Now") && !paragraph.text().contains("Football Pick'em") && !paragraph.text().contains("Play Now") && !paragraph.text().contains("College Football Pick'em") && !paragraph.text().contains("Your Daily NFL Fix") && !paragraph.text().contains("Daily Soccer Podcast") && !paragraph.text().contains("© 2004-2023 CBS Interactive. All Rights Reserved.") && !paragraph.text().contains("CBS Sports is a registered trademark of CBS Broadcasting Inc. Commissioner.com is a registered trademark of CBS Interactive Inc.")) {
-                            content.append("<p>" + paragraph.text() + "</p>" + System.lineSeparator() + System.lineSeparator());
-                        }
-                        for (Element h3 : h3Elements) {
-                            if (h3.previousElementSibling() == paragraph) {
-                                content.append("<strong>" + h3.text() + ":" + "</strong>" + System.lineSeparator() + System.lineSeparator());
-                            }
-                        }
-                        Elements aTags = doc.select("a[href*=twitter.com]");
-                        for (Element aTag : aTags) {
-                            String tweetUrl = aTag.attr("href").split("\\?")[0];
-                            String tweetRegex = "https://twitter.com/(?!(?:i\\/|.*timelines\\/))\\w+/status/\\d+";
-                            if (tweetUrl.matches(tweetRegex) && !tweetUrls.contains(tweetUrl)) {
-                                // Construct the API URL with the tweet URL as a query parameter
-                                String apiUrl = "https://publish.twitter.com/oembed?url=" + URLEncoder.encode(tweetUrl, "UTF-8");
-                                URL url = new URL(apiUrl);
-                                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                                conn.setRequestMethod("GET");
-                                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                                String inputLine;
-                                StringBuilder response = new StringBuilder();
-                                while ((inputLine = in.readLine()) != null) {
-                                    response.append(inputLine);
-                                }
-                                in.close();
-                                JSONObject jsonResponse = new JSONObject(response.toString());
-                                String html = jsonResponse.getString("html");
-                                String blockquoteHtml = html.replaceAll("(?s)<blockquote[^>]*>((?:(?!</?script)[\\s\\S])*?)</blockquote>", "<blockquote class=\"twitter-tweet\">$1</blockquote>");
-                                String removingScriptTags = blockquoteHtml.replaceAll("<script async src=\"https://platform.twitter.com/widgets.js\" charset=\"utf-8\"></script>", "");
-                                if (blockquoteHtml != null) {
-                                    content.append(removingScriptTags);
-                                    tweetUrls.add(tweetUrl); // Add the tweet URL to the set
-                                }
-                            }
-                        }
-                    }
-                    String contentString = content.toString();
+                    // Check if paragraph contains class "NewsFeed-title"
+                    if (!paragraph.hasClass("NewsFeed-title")) {
+                        // Get all <p> elements within the article body content
+                        Elements paragraphs = paragraph.select("p");
 
+                        // Iterate over each <p> element
+                        for (Element p : paragraphs) {
+                            // Check if paragraph contains any unwanted text
+                            if (p.text().contains("Play Now") && p.text().contains("Football Pick'em") && p.text().contains("Play Now") && p.text().contains("College Football Pick'em") && p.text().contains("Your Daily NFL Fix") && p.text().contains("Daily Soccer Podcast") && p.text().contains("© 2004-2023 CBS Interactive. All Rights Reserved.") && p.text().contains("CBS Sports is a registered trademark of CBS Broadcasting Inc. Commissioner.com is a registered trademark of CBS Interactive Inc.")
+                                    && p.text().contains("Our Latest NFL Stories") && p.text().contains("Thanks for signing up") && p.text().contains("Sorry") && p.text().contains("Crafted By The Best NFL Experts") && p.text().contains("View Profile") && p.text().contains("click here")) {
+                                // Remove the paragraph from the parent element
+                                p.remove();
+                            }
+                        }
+
+                        // Select all <img> elements within the article body content
+                        Elements images = paragraph.select("img[data-lazy]");
+
+                        // Iterate over each image element
+                        for (Element img : images) {
+                            // Get the value of the data-lazy attribute
+                            String lazySrc = img.attr("data-lazy");
+
+                            // Set the value of the srcset attribute to the value of data-lazy
+                            img.attr("srcset", lazySrc);
+
+                            // Remove the data-lazy attribute
+                            img.removeAttr("data-lazy");
+                        }
+
+                        Elements scripts = paragraph.select("script");
+
+                        // Iterate over each div element
+                        for (Element script : scripts) {
+                            if (script.hasAttr("src") && script.attr("src").equals("https://platform.twitter.com/widgets.js")) {
+                                // Add the Vue directive to the script
+                                script.attr("is", "vue:script");
+                                // Replace the script element with a div element
+                                Element div = new Element(Tag.valueOf("div"), "");
+                                // Copy attributes from the script to the div
+                                for (Attribute attribute : script.attributes()) {
+                                    div.attr(attribute.getKey(), attribute.getValue());
+                                }
+                                // Copy the content of the script to the div
+                                div.text(script.data());
+                                // Replace the script with the new div
+                                script.replaceWith(div);
+
+                            }
+                        }
+
+                    }
+
+                    // Now you can access the modified HTML content
+                    String modifiedHtml = paragraph.html();
+                    content.append(modifiedHtml);
+
+                    String contentString = content.toString();
                     String sql = "INSERT INTO article_content (article_id, title, text, url, url_to_image, category, category_specified) VALUES (?,?,?,?,?,?,?) ON CONFLICT (article_id) DO NOTHING;";
                     jdbcTemplate.update(sql, article.getId(), article.getTitle(), contentString, articleUrl, article.getUrlToImage(), article.getCategory(), article.getCategorySpecified());
+
                 } else if (article.getName().equals("NHL News")) {
                     String url = article.getUrl();
                     Document doc = Jsoup.connect(url).get();
@@ -1514,6 +1608,12 @@ public class JdbcArticleContentDao implements ArticleContentDao {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
         }
+
+    }
+    private static String removeComments(String html) {
+        // Use regular expression to remove HTML comments
+        return html.replaceAll("<!--(.*?)-->", "");
     }
 }
