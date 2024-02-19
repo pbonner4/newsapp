@@ -399,13 +399,77 @@ public class JdbcArticleContentDao implements ArticleContentDao {
                 } else if (article.getName().equals("NFL News")) {
                     String url = article.getUrl();
                     Document doc = Jsoup.connect(url).get();
-                    Elements pElements = doc.select(".nfl-c-article__container p");
-                    StringBuilder content = new StringBuilder();
-                    for (Element paragraph : pElements) {
-                        if (!paragraph.text().contains("Follow Ian Rapoport on Twitter.")) {
-                            content.append(paragraph.text() + System.lineSeparator() + System.lineSeparator());
+                    Elements paragraph = doc.select("div .nfl-c-article__body");
+
+//            paragraph.select(".css-1lm38nn").remove();
+                    paragraph.select("#taboola-mid-article-recommendation-reel").remove();
+                    paragraph.select(".ArticlePage-branding").remove();
+                    paragraph.select(".d3-o-adv-block").remove();
+                    paragraph.select(".nfl-o-cta--link").remove();
+                    paragraph.select(".nfl-c-article__related-links").remove();
+                    paragraph.select(".nfl-c-article__related-links-section").remove();
+
+                    Elements scripts = paragraph.select("script");
+                    Elements divs = paragraph.select("div");
+
+                    for (Element div : divs) {
+                        if (div.html().contains("Follow  on Twitter")) {
+                            div.remove();
                         }
                     }
+
+                    for (Element script : scripts) {
+                        if (!script.hasAttr("src") && !script.attr("src").equals("https://platform.twitter.com/widgets.js")) {
+                            script.remove();
+                        }
+                        if (script.hasAttr("src") && script.attr("src").equals("https://platform.twitter.com/widgets.js")) {
+                            // Add the Vue directive to the script
+                            script.attr("is", "vue:script");
+                            // Replace the script element with a div element
+                            Element div = new Element(Tag.valueOf("div"), "");
+                            // Copy attributes from the script to the div
+                            for (Attribute attribute : script.attributes()) {
+                                div.attr(attribute.getKey(), attribute.getValue());
+                            }
+                            // Copy the content of the script to the div
+                            div.text(script.data());
+                            // Replace the script with the new div
+                            script.replaceWith(div);
+
+                        }
+                    }
+
+                    // Select all <img> elements within the article body content
+                    Elements images = paragraph.select("img[data-src]");
+
+                    // Iterate over each image element
+                    for (Element img : images) {
+                        // Get the value of the data-lazy attribute
+                        String lazySrc = img.attr("data-src");
+
+                        // Remove "/t_lazy" from the lazySrc string
+                        lazySrc = lazySrc.replace("/t_lazy", "");
+
+                        // Set the value of the srcset attribute to the value of data-lazy
+                        img.attr("srcset", lazySrc);
+
+                        // Remove the data-lazy attribute
+                        img.removeAttr("data-src");
+
+
+                    }
+
+                    paragraph.select("i").remove();
+
+
+
+
+                    StringBuilder content = new StringBuilder();
+
+
+
+                    content.append(removeComments(paragraph.html()));
+
                     String contentString = content.toString();
                     String sql = "INSERT INTO article_content (article_id, title, text, url, url_to_image, category, category_specified) VALUES (?,?,?,?,?,?,?) ON CONFLICT (article_id) DO NOTHING;";
                     jdbcTemplate.update(sql, article.getId(), article.getTitle(), contentString, url, article.getUrlToImage(), article.getCategory(), article.getCategorySpecified());
@@ -492,11 +556,101 @@ public class JdbcArticleContentDao implements ArticleContentDao {
                 } else if (article.getName().equals("NHL News")) {
                     String url = article.getUrl();
                     Document doc = Jsoup.connect(url).get();
-                    Elements pElements = doc.select(".article-item__body p");
-                    StringBuilder content = new StringBuilder();
-                    for (Element paragraph : pElements) {
-                        content.append(paragraph.text() + System.lineSeparator() + System.lineSeparator());
+                    Elements paragraph = doc.select("div .nhl-c-article__body");
+
+                    Elements scripts = paragraph.select("script");
+                    Elements divs = paragraph.select("div");
+
+                    for (Element div : divs) {
+                        if (div.html().contains("Follow  on Twitter")) {
+                            div.remove();
+                        }
                     }
+
+                    for (Element script : scripts) {
+                        if (!script.hasAttr("src") && !script.attr("src").equals("https://platform.twitter.com/widgets.js")) {
+                            script.remove();
+                        }
+                        if (script.hasAttr("src") && script.attr("src").equals("https://platform.twitter.com/widgets.js")) {
+                            // Add the Vue directive to the script
+                            script.attr("is", "vue:script");
+                            // Replace the script element with a div element
+                            Element div = new Element(Tag.valueOf("div"), "");
+                            // Copy attributes from the script to the div
+                            for (Attribute attribute : script.attributes()) {
+                                div.attr(attribute.getKey(), attribute.getValue());
+                            }
+                            // Copy the content of the script to the div
+                            div.text(script.data());
+                            // Replace the script with the new div
+                            script.replaceWith(div);
+
+                        }
+                        if (script.hasAttr("src") && script.attr("src").equals("//platform.instagram.com/en_US/embeds.js")) {
+                            // Add the Vue directive to the script
+                            script.attr("is", "vue:script");
+                            // Replace the script element with a div element
+                            Element div = new Element(Tag.valueOf("div"), "");
+                            // Copy attributes from the script to the div
+                            for (Attribute attribute : script.attributes()) {
+                                div.attr(attribute.getKey(), attribute.getValue());
+                            }
+                            // Copy the content of the script to the div
+                            div.text(script.data());
+                            // Replace the script with the new div
+                            script.replaceWith(div);
+
+                        }
+                    }
+
+                    // Select all SVG elements in the paragraph
+                    Elements svgElements = paragraph.select("svg");
+
+                    // Loop through each SVG element
+                    for (Element svg : svgElements) {
+                        // Remove the xmlns attribute
+                        svg.removeAttr("xmlns");
+
+                        // Remove the xmlns:xlink attribute
+                        svg.removeAttr("xmlns:xlink");
+                    }
+
+                    // Select all <img> elements within the article body content
+                    Elements images = paragraph.select("img[data-src]");
+
+                    // Iterate over each image element
+                    for (Element img : images) {
+                        // Check if the parent of the image is a <picture> tag
+                        if (img.parent().tagName().equalsIgnoreCase("picture")) {
+                            // If it's wrapped in a <picture> tag, skip it
+                            continue;
+                        }
+                        // Get the value of the data-lazy attribute
+                        String lazySrc = img.attr("data-src");
+
+                        // Remove "/t_lazy" from the lazySrc string
+                        lazySrc = lazySrc.replace("/t_lazy", "");
+
+                        // Set the value of the srcset attribute to the value of data-lazy
+                        img.attr("srcset", lazySrc);
+
+                        // Remove the data-lazy attribute
+                        img.removeAttr("data-src");
+
+
+                    }
+
+                    paragraph.select("i").remove();
+
+
+
+
+                    StringBuilder content = new StringBuilder();
+
+
+
+                    content.append(removeComments(paragraph.html()));
+
                     String contentString = content.toString();
                     String sql = "INSERT INTO article_content (article_id, title, text, url, url_to_image, category, category_specified) VALUES (?,?,?,?,?,?,?) ON CONFLICT (article_id) DO NOTHING;";
                     jdbcTemplate.update(sql, article.getId(), article.getTitle(), contentString, url, article.getUrlToImage(), article.getCategory(), article.getCategorySpecified());
