@@ -214,7 +214,7 @@ public class JdbcArticleContentDao implements ArticleContentDao {
 
                     }
 
-                    // Now you can access the modified HTML content
+                    // access the modified HTML content
                     String modifiedHtml = paragraph.html();
                     content.append(modifiedHtml);
 
@@ -428,7 +428,7 @@ public class JdbcArticleContentDao implements ArticleContentDao {
 
                     }
 
-                    // Now you can access the modified HTML content
+                    // can access the modified HTML content
                     String modifiedHtml = paragraph.html();
                     content.append(modifiedHtml);
 
@@ -521,7 +521,7 @@ public class JdbcArticleContentDao implements ArticleContentDao {
 
                     }
 
-                    // Now you can access the modified HTML content
+                    // can access the modified HTML content
                     String modifiedHtml = paragraph.html();
                     content.append(modifiedHtml);
 
