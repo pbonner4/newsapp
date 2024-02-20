@@ -8,6 +8,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.TextNode;
 import org.jsoup.parser.Tag;
 import org.jsoup.select.Elements;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -672,44 +673,104 @@ public class JdbcArticleContentDao implements ArticleContentDao {
                     String articleUrl = article.getUrl();
                     Set<String> tweetUrls = new HashSet<>();
                     Document doc = Jsoup.connect(articleUrl).get();
-                    Elements pElements = doc.select(".c-entry-content p");
-                    StringBuilder content = new StringBuilder();
-                    for (Element paragraph : pElements) {
-                        content.append("<p>"+paragraph.text()+"</p>" + System.lineSeparator() + System.lineSeparator());
+                    Elements paragraph = doc.select("div .l-sidebar-fixed");
 
-                        Elements youtubeVids = doc.select("#player div");
-                        for (Element youtubeVid : youtubeVids){
-                            content.append(youtubeVid.html());
-                        }
+                    paragraph.select("aside").remove();
+                    paragraph.select(".u-desktop-only ").remove();
+                    paragraph.select(".metabet-adtile-auto ").remove();
+                    paragraph.select("#comments").remove();
+                    paragraph.select("#comments-sidebar").remove();
+                    paragraph.select(".u-desktop-only ").remove();
+                    paragraph.select("div[data-analytics-placement]").remove();
+                    paragraph.select("figure").remove();
+                    paragraph.select(".c-promo-breaker").remove();
+                    Elements unorderedLists = paragraph.select("ul");
+                    Elements scripts = paragraph.select("script");
+                    Elements divs = paragraph.select("div");
+                    Elements ptags = paragraph.select("p");
+                    Elements anchorElements = paragraph.select("a");
 
-                        Elements aTags = doc.select("a[href*=twitter.com]");
-                        for (Element aTag : aTags) {
-                            String tweetUrl = aTag.attr("href").split("\\?")[0];
-                            String tweetRegex = "https://twitter.com/(?!(?:i\\/|.*timelines\\/))\\w+/status/\\d+";
-                            if (tweetUrl.matches(tweetRegex) && !tweetUrls.contains(tweetUrl)) {
-                                // Construct the API URL with the tweet URL as a query parameter
-                                String apiUrl = "https://publish.twitter.com/oembed?url=" + URLEncoder.encode(tweetUrl, "UTF-8");
-                                URL url = new URL(apiUrl);
-                                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                                conn.setRequestMethod("GET");
-                                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                                String inputLine;
-                                StringBuilder response = new StringBuilder();
-                                while ((inputLine = in.readLine()) != null) {
-                                    response.append(inputLine);
-                                }
-                                in.close();
-                                JSONObject jsonResponse = new JSONObject(response.toString());
-                                String html = jsonResponse.getString("html");
-                                String blockquoteHtml = html.replaceAll("(?s)<blockquote[^>]*>((?:(?!</?script)[\\s\\S])*?)</blockquote>", "<blockquote class=\"twitter-tweet\">$1</blockquote>");
-                                String removingScriptTags = blockquoteHtml.replaceAll("<script async src=\"https://platform.twitter.com/widgets.js\" charset=\"utf-8\"></script>", "");
-                                if (blockquoteHtml != null) {
-                                    content.append(removingScriptTags);
-                                    tweetUrls.add(tweetUrl); // Add the tweet URL to the set
-                                }
-                            }
+                    for (Element anchor : anchorElements) {
+                        anchor.replaceWith(new TextNode(anchor.text()));
+                    }
+
+                    for (Element unorderedList : unorderedLists){
+                        if (unorderedList.parent() != null && unorderedList.parent().text().contains("More From")) {
+                            unorderedList.remove();
                         }
                     }
+
+                    for (Element div : divs) {
+                        if (div.html().contains("Follow  on Twitter")) {
+                            div.remove();
+                        }
+                    }
+
+                    for (Element paragraphs : ptags) {
+                        if (paragraphs.html().contains("Related")) {
+                            paragraphs.remove();
+                        }
+                    }
+
+                    for (Element script : scripts) {
+                        if (!script.hasAttr("src") && !script.attr("src").equals("https://platform.twitter.com/widgets.js")) {
+                            script.remove();
+                        }
+                        if (script.hasAttr("src") && script.attr("src").equals("https://platform.twitter.com/widgets.js")) {
+                            // Add the Vue directive to the script
+                            script.attr("is", "vue:script");
+                            // Replace the script element with a div element
+                            Element div = new Element(Tag.valueOf("div"), "");
+                            // Copy attributes from the script to the div
+                            for (Attribute attribute : script.attributes()) {
+                                div.attr(attribute.getKey(), attribute.getValue());
+                            }
+                            // Copy the content of the script to the div
+                            div.text(script.data());
+                            // Replace the script with the new div
+                            script.replaceWith(div);
+
+                        }
+                        if (script.hasAttr("src") && script.attr("src").equals("//platform.instagram.com/en_US/embeds.js")) {
+                            // Add the Vue directive to the script
+                            script.attr("is", "vue:script");
+                            // Replace the script element with a div element
+                            Element div = new Element(Tag.valueOf("div"), "");
+                            // Copy attributes from the script to the div
+                            for (Attribute attribute : script.attributes()) {
+                                div.attr(attribute.getKey(), attribute.getValue());
+                            }
+                            // Copy the content of the script to the div
+                            div.text(script.data());
+                            // Replace the script with the new div
+                            script.replaceWith(div);
+
+                        }
+                    }
+
+                    // Select all SVG elements in the paragraph
+                    Elements svgElements = paragraph.select("svg");
+
+                    // Loop through each SVG element
+                    for (Element svg : svgElements) {
+                        // Remove the xmlns attribute
+                        svg.removeAttr("xmlns");
+
+                        // Remove the xmlns:xlink attribute
+                        svg.removeAttr("xmlns:xlink");
+                    }
+
+                    // Select all <img> elements within the article body content
+                    Elements images = paragraph.select("img[data-src]");
+
+                    paragraph.select("i").remove();
+
+                    StringBuilder content = new StringBuilder();
+
+                    paragraph.select(".c-related-list__head").remove();
+
+                    content.append(removeComments(paragraph.html()));
+                    
                     String contentString = content.toString();
 
                     String sql = "INSERT INTO article_content (article_id, title, text, url, url_to_image, category, category_specified) VALUES (?,?,?,?,?,?,?) ON CONFLICT (article_id) DO NOTHING;";
