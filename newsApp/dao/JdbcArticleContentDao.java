@@ -1109,11 +1109,100 @@ public class JdbcArticleContentDao implements ArticleContentDao {
                 } else if (article.getName().equals("Eonline.com")) {
                     String url = article.getUrl();
                     Document doc = Jsoup.connect(url).get();
-                    Elements pElements = doc.select(".article-detail__text-only p");
-                    StringBuilder content = new StringBuilder();
-                    for (Element paragraph : pElements) {
-                        content.append("<p>" + paragraph.text() + "</p>" + System.lineSeparator() + System.lineSeparator());
+                    Elements paragraph = doc.select(".columns");
+
+                    Elements scripts = paragraph.select("script");
+                    paragraph.select(".trending-content").remove();
+                    paragraph.select("#mid-article-thumbnail").remove();
+                    paragraph.select("#mid-article-thumbnail").remove();
+                    paragraph.select(".snipe-banner").remove();
+                    paragraph.select(".article-detail__title").remove();
+                    paragraph.select(".article-detail__meta").remove();
+                    paragraph.select(".adp-cat__list").remove();
+                    paragraph.select(".article-detail__segment-ad").remove();
+                    paragraph.select(".is-relative").remove();
+                    paragraph.select(".adp-cat__list").remove();
+                    paragraph.select(".article-detail__video-text").remove();
+                    paragraph.select(".social-share").remove();
+                    paragraph.select(".article-detail__cta").remove();
+                    paragraph.select(".article-detail__tunein").remove();
+
+
+                    for (Element script : scripts) {
+
+                        if (script.html().contains("window.pmc_taboola.push")) {
+                            // Remove the script element
+                            script.remove();
+                        }
                     }
+
+
+                    Elements anchorElements = paragraph.select("a");
+
+                    for (Element anchor : anchorElements) {
+                        anchor.replaceWith(new TextNode(anchor.text()));
+                    }
+
+
+                    for (Element script : scripts) {
+                        if (script.hasAttr("src") && script.attr("src").equals("https://platform.twitter.com/widgets.js")) {
+                            // Add the Vue directive to the script
+                            script.attr("is", "vue:script");
+                            // Replace the script element with a div element
+                            Element div = new Element(Tag.valueOf("div"), "");
+                            // Copy attributes from the script to the div
+                            for (Attribute attribute : script.attributes()) {
+                                div.attr(attribute.getKey(), attribute.getValue());
+                            }
+                            // Copy the content of the script to the div
+                            div.text(script.outerHtml());
+                            // Replace the script with the new div
+                            script.replaceWith(div);
+                            System.out.println(script);
+
+                        }
+                        if (script.hasAttr("src") && script.attr("src").equals("//platform.instagram.com/en_US/embeds.js")) {
+                            // Add the Vue directive to the script
+                            script.attr("is", "vue:script");
+                            // Replace the script element with a div element
+                            Element div = new Element(Tag.valueOf("div"), "");
+                            // Copy attributes from the script to the div
+                            for (Attribute attribute : script.attributes()) {
+                                div.attr(attribute.getKey(), attribute.getValue());
+                            }
+                            // Copy the content of the script to the div
+                            div.text(script.data());
+                            // Replace the script with the new div
+                            script.replaceWith(div);
+
+                        } else {
+                            continue;
+                        }
+                    }
+
+                    // Select all <img> elements within the article body content
+                    Elements images = paragraph.select("img");
+                    // Iterate over each image element
+                    for (Element img : images) {
+                        // Get the value of the data-lazy attribute
+                        String lazySrc = img.attr("data-srcset");
+
+
+                        // Set the value of the srcset attribute to the value of data-lazy
+                        img.attr("srcset", lazySrc);
+
+                        // Remove the data-lazy attribute
+                        img.removeAttr("data-srcset");
+
+
+                    }
+
+                    paragraph.select("i").remove();
+
+                    StringBuilder content = new StringBuilder();
+
+                    content.append(removeComments(paragraph.html()));
+
                     String contentString = content.toString();
                     String sql = "INSERT INTO article_content (article_id, title, text, url, url_to_image, category, category_specified) VALUES (?,?,?,?,?,?,?) ON CONFLICT (article_id) DO NOTHING;";
                     jdbcTemplate.update(sql, article.getId(), article.getTitle(), contentString, url, article.getUrlToImage(), article.getCategory(), article.getCategorySpecified());
