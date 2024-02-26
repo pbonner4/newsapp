@@ -408,6 +408,8 @@ public class JdbcArticleContentDao implements ArticleContentDao {
                     paragraph.select(".d3-o-adv-block").remove();
                     paragraph.select(".nfl-o-cta--link").remove();
                     paragraph.select(".nfl-c-article__related-links").remove();
+                    paragraph.select(".gambling-partner-ad").remove();
+                    paragraph.select(".ArticleRelatedLinks").remove();
                     paragraph.select(".nfl-c-article__related-links-section").remove();
 
                     Elements scripts = paragraph.select("script");
