@@ -112,65 +112,103 @@
   }
   </script>
   
-<style scoped>
+  <style scoped>
 
-i{
-  color: #dd3434;
-}
-
-button{
-  margin-bottom: 10%;
-  padding:5px;
-  background-color: #0060b5;
-  border: 1px solid black;
-  border-radius: 20%;
-  color:#fff;
-  text-decoration:none;
-  cursor: pointer;
-}
-.comments-header{
-  text-align: left;
-}
-
-.comment {
-  font-family: Arial, Helvetica, sans-serif;
-  padding: 2rem;
-  font-size: larger;
-  display: flex;
-  justify-content: space-between;
-  background-color: rgb(181, 181, 181);
-  border-radius: 2%;
-  margin-bottom: 10px;
-  width: 75%;
-
-}
-
-.initial-comment{
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-}
-
-.initial-comment-box{
-  width: 45%;
-  height: 100%;
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-.initial-comment-button{
-  margin-top: 20px;
-  width: 5em;
-  margin-bottom: 8em;
-  display: flex;
-  align-items: center;
-}
-.username-date{
-  font-size:small;
-}
-
-.reply{
-  margin-left: 50px;
-  background-color: lightgrey;
-}
-
-</style>
+  .fa-scissors {
+    color: #dd3434;
+  }
+  
+  .comments-header {
+    text-align: center;
+    font-size: 24px;
+    padding: 20px 0;
+  }
+  
+  .comment {
+    font-family: Arial, Helvetica, sans-serif;
+    padding: 15px;
+    font-size: 16px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ccc;
+  }
+  
+  .initial-comment-box {
+    width: 100%;
+    height: 100px;
+    font-family: Arial, Helvetica, sans-serif;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    resize: vertical;
+  }
+  
+  button {
+    width: 150px;
+    height: fit-content;
+    padding: 10px;
+    background-color: #0060b5;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 10px 0;
+  }
+  
+  .username-date {
+    font-size: 12px;
+    color: #888;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .reply {
+    margin-left: 15px;
+    background-color: #f2f2f2;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  
+  .cursor-blink {
+    display: inline-block;
+    width: 8px;
+    height: 2px;
+    background-color: #333;
+    margin-left: 5px;
+    animation: blink-animation 1s steps(5, start) infinite;
+  }
+  
+  @keyframes blink-animation {
+    to {
+      visibility: hidden;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .comment {
+      padding: 10px;
+      font-size: 14px;
+    }
+    
+    .initial-comment-box {
+      height: 80px;
+      padding: 8px;
+    }
+    
+    .initial-comment-button {
+      width: 120px;
+      padding: 8px;
+      margin: 5px 0;
+    }
+    
+    .username-date {
+      font-size: 10px;
+    }
+  }
+  
+  </style>
