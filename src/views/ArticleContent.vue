@@ -124,8 +124,9 @@
                     <h4>read from the original source here:</h4> <a class="a-article" v-bind:href="content.url" target="__blank"> {{ content.url }}</a>
                     <GeneratedSummary></GeneratedSummary>
                     <Tweet></Tweet>
-
-                    <div v-html="content.text" ></div>
+                   <div v-html="content.text" ></div>
+                    
+    
                     <ContentBasedSuggestedArticles :articleId="content.article_id"></ContentBasedSuggestedArticles>
 
                     <div class="share-buttons"> 
@@ -324,6 +325,7 @@
       //gets article Content
       ArticleService.getArticleContent(this.$route.params.id).then(response => {
         this.article = response.data
+        
       }),
       //calls all of the trending articles
       ArticleService.listTrendingArticles().then(response => {
@@ -346,10 +348,8 @@
         this.isDesktop = window.matchMedia("(min-width: 913px)").matches
         window.addEventListener("resize", this.handleResize)
         window.addEventListener('scroll', this.handleScroll)
-        const script = document.createElement('script');
-        script.src = 'https://platform.twitter.com/widgets.js';
-        script.async = true;
-        document.head.appendChild(script);
+      
+        this.loadTwitterWidgetScript();
       },
     computed: {
       //how whether or not a user has liked a post in the past and keeps the buttons a different color
@@ -370,6 +370,18 @@
     },
   },
       methods: {
+        loadTwitterWidgetScript() {
+      // Dynamically load Twitter widget script
+      const script = document.createElement('script');
+      script.src = 'https://platform.twitter.com/widgets.js';
+      script.async = true;
+      script.charset = 'utf-8';
+      script.defer = true;
+      script.classList.add('optanon-category-5'); // Add any necessary classes
+
+      // Append the script to the document body
+      document.body.appendChild(script);
+    },
         getTweets(){
         setTimeout(1, window.location.reload())
         
@@ -632,6 +644,24 @@
     </script>
     
     <style scoped>
+
+    :deep(a) {
+      list-style: none;
+      text-decoration: none;
+      color: #dd3434;
+      transition: all 0.3s ease;
+      font-family: 'Titillium Web', sans-serif;
+    }
+    
+    :deep(ul){
+      list-style: none;
+      font-size: large;
+    }
+
+    :deep(h3){
+      font-size: x-large;
+    }
+
     a{
       text-decoration: none;
       color: black;
@@ -658,9 +688,7 @@
       font-family: 'Titillium Web', sans-serif;
     }
   
-    :deep PlayerSnippet-info {
-
-    }
+ 
     .hidden {
         display: none;
     }
@@ -1055,8 +1083,145 @@
     }
 
     .email-share i{
-      color: #fff
+      color: #fff;
     }
+    
+    /* CBS NFL ARTICLES */
+
+:deep(.Annotation-link) {
+  color: #0078d4;
+  text-decoration: none;
+}
+
+:deep(.PlayerSnippet) {
+  border: 2px solid #0078d4;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+}
+
+:deep(.PlayerSnippet-image) {
+  position: relative;
+}
+
+:deep(.PlayerSnippet-name) {
+  font-weight: bold;
+}
+
+:deep(.PlayerSnippet-stats) {
+  margin-top: 10px;
+}
+
+:deep(.PlayerSnippet-stat) {
+  display: inline-block;
+  margin-right: 10px;
+}
+
+:deep(.PlayerSnippet-button) {
+  background-color: #0060b5;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin-top: 10px;
+  text-decoration: none;
+}
+
+:deep(.TeamLogo-image) {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  margin: 5px;
+  width: 3rem; 
+}
+
+:deep(.BasicButton) {
+  display: inline-block;
+  padding: 5px 10px;
+  background-color: #0060b5;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 3px;
+  margin-top: 10px;
+}
+
+:deep(.link a) {
+  color: #0a7bff;
+}
+
+:deep(.gambling-partner-ad) {
+  display: none;
+}
+
+:deep(.MediaShortcodeImage) {
+  text-align: center;
+}
+
+:deep(.MediaShortcode-caption) {
+  font-weight: bold;
+}
+
+:deep(.MediaShortcode-credit) {
+  font-style: italic;
+}
+
+:deep(.NewsListItem) {
+  border: 1px solid #ccc;
+  padding: 15px;
+  margin: 10px 0;
+}
+
+:deep(.NewsListItem h2) {
+  color: #333;
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+:deep(.NewsListItem p) {
+  text-align: justify;
+  line-height: 1.5;
+}
+
+:deep(.NewsListItem ul) {
+  list-style-type: disc;
+  padding-left: 20px;
+}
+
+:deep(.link) {
+  color: #007BFF;
+  text-decoration: none;
+}
+
+:deep(.link:hover) {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  :deep(.MediaShortcodeImage) {
+    display: block;
+  }
+
+  :deep(.MediaShortcode-figcaption) {
+    display: block;
+    text-align: center;
+  }
+}
+    
+@media (max-width: 768px) {
+  :deep(.PlayerSnippet) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  :deep(.TeamLogo) {
+    position: relative;
+    margin: 5px;
+    width: 20px;
+  }
+
+}
+
+    /* CBS NBA ARTICLES */
+
     
   
     </style>
