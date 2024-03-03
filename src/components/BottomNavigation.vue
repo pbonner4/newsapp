@@ -1,30 +1,35 @@
 <template>
   <!-- bottom nav bar in mobile mode -->
-  <nav class = "trending-nav">
-            <router-link v-bind:to="{ name: 'home'}" style="margin-top: 13px;" class="trending-nav-search-button" v-on:click="sectionClicked = 'home'">
-                <i v-bind:class="{ red: sectionClicked == 'home'}" class="fa-solid fa-newspaper"></i>
-              </router-link>
-              <router-link v-bind:to="{ name: 'TrendingPage'}" style="margin-top: 13px;" class="i-changed trending-nav-search-button" v-on:click="sectionClicked = 'trending'">
-                <i v-bind:class="{ red: sectionClicked == 'trending'}" class="fa-solid fa-arrow-trend-up fa-lg"></i>
-              </router-link>
-              <router-link v-bind:to="{ name: 'searchBar'}" style="margin-top: 13px;" class="trending-nav-search-button" v-on:click="sectionClicked = 'search'">
-                <i v-bind:class="{ red: sectionClicked == 'search'}" class="fa-solid fa-magnifying-glass fa-lg" ></i>
-              </router-link>
-                <router-link v-bind:to="{ name: 'profilePage'}" style="margin-top: 13px;" class="trending-nav-search-button" v-on:click="sectionClicked = 'profile'">
-                <i v-bind:class="{ red: sectionClicked == 'profile'}" class="fa-solid fa-user fa-lg"></i>
-              </router-link>
-      </nav>
+  <nav class="trending-nav">
+    <router-link v-bind:to="{ name: 'home'}" style="margin-top: 13px;" class="trending-nav-search-button" v-on:click="sectionClicked = 'home'">
+      <i v-bind:class="{ red: isSectionActive('home') }" class="fa-solid fa-newspaper"></i>
+    </router-link>
+    <router-link v-bind:to="{ name: 'TrendingPage'}" style="margin-top: 13px;" class="trending-nav-search-button" v-on:click="sectionClicked = 'trending'">
+      <i v-bind:class="{ red: isSectionActive('TrendingPage') }" class="fa-solid fa-arrow-trend-up fa-lg"></i>
+    </router-link>
+    <router-link v-bind:to="{ name: 'searchBar'}" style="margin-top: 13px;" class="trending-nav-search-button" v-on:click="sectionClicked = 'search'">
+      <i v-bind:class="{ red: isSectionActive('searchBar') }" class="fa-solid fa-magnifying-glass fa-lg"></i>
+    </router-link>
+    <router-link v-bind:to="{ name: 'profilePage'}" style="margin-top: 13px;" class="trending-nav-search-button" v-on:click="sectionClicked = 'profile'">
+      <i v-bind:class="{ red: isSectionActive('profilePage') }" class="fa-solid fa-user fa-lg"></i>
+    </router-link>
+  </nav>
 </template>
 
 <script>
 export default {
-
-    data(){
-        return{ 
-          sectionClicked: ''
-        }
-    },
-    
+  data() {
+    return {
+      sectionClicked: ''
+    }
+  },
+  methods: {
+    isSectionActive(sectionName) {
+      console.log("route: " + this.$route.name)
+      console.log("section: " + sectionName)
+      return this.$route.name === sectionName;
+    }
+  }
 }
 </script>
 
